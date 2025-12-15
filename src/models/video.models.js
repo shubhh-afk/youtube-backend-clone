@@ -1,18 +1,5 @@
 import mongoose, { Schema } from "mongoose";
 
-/**
- * owner ObjectId users
-  videoFile string
-  thumbnail string
-  title string
-  description string
-  duration number
-  views number
-  isPublished boolean
-  createdAt Date
-  updatedAt Date
- */
-
 const videoSchema = new Schema(
   {
     videoFile: {
