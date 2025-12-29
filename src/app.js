@@ -15,14 +15,16 @@ app.use(
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
-app.use(cookieParser);
+app.use(cookieParser());
 
 // import routes
 import healthCheckRouter from "./routes/healthCheck.routes.js";
 import userRouter from "./routes/user.routes.js";
+import { errorhandler } from "./middlewares/error.middlewares.js";
 
 // routes
-app.use("/api/v1/heathcheck", healthCheckRouter);
+app.use("/api/v1/healthcheck", healthCheckRouter);
 app.use("/api/v1/user", userRouter);
 
+app.use(errorhandler);
 export { app };
