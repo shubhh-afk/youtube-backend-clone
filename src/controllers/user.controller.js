@@ -2,7 +2,10 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/API-Error.js";
 import { ApiResponse } from "../utils/API-Response.js";
 import { User } from "../models/user.models.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import {
+  uploadOnCloudinary,
+  deleteFromCloudinary,
+} from "../utils/cloudinary.js";
 
 const registerUser = asyncHandler(async (req, res) => {
   // TODO
@@ -56,6 +59,20 @@ const registerUser = asyncHandler(async (req, res) => {
   return res
     .status(201)
     .json(new ApiResponse(201, createdUser, "User registered successfully"));
+  } catch (error) {
+    console.log("User creation failed", error);
+
+    if (avatar) {
+      await deleteFromCloudinary(avatar.public_id);
+    }
+    if (coverImage) {
+      await deleteFromCloudinary(coverImage.public_id);
+    }
+    throw new ApiError(
+      500,
+      "Something went wrong while registering a user and images were deleted"
+    );
+  }
 });
 
 export { registerUser };
