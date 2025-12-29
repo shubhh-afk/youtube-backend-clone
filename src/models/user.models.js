@@ -51,12 +51,10 @@ const userSchema = new Schema(
 );
 
 // hashing the password using bcrypt module before saving it to db.
-userSchema.pre("save", async function (next) {
-  if (!this.modified("password")) return next(); // only run when password modified
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return; // only run when password modified
 
-  this.password = bcrypt.hash(this.password, 10);
-
-  next();
+  this.password = await bcrypt.hash(this.password, 10);
 });
 
 // custom function using bcrypt 'compare' method if both passwords match or not
