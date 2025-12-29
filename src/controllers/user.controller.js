@@ -26,39 +26,61 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User with email or username already exists");
   }
 
-  const avatarLocalPath = req.files?.avatar[0]?.path;
-  const coverLocalPath = req.files?.coverImage[0]?.path;
+  const avatarLocalPath = req.files?.avatar?.[0]?.path;
+  const coverLocalPath = req.files?.coverImage?.[0]?.path;
 
-  if (!avatarLocalPath) {
-    throw new ApiError(400, "Avatar file is missing");
+  // if (!avatarLocalPath) {
+  //   throw new ApiError(400, "Avatar file is missing");
+  // }
+
+  // const avatar = await uploadOnCloudinary(avatarLocalPath);
+  // if (!avatar) {
+  //   throw new ApiError(500, "Failed to upload avatar to cloudinary");
+  // }
+  // let coverImage = "";
+  // if (coverLocalPath) {
+  //   coverImage = await uploadOnCloudinary(coverLocalPath);
+  // }
+
+  let avatar;
+  try {
+    avatar = await uploadOnCloudinary(avatarLocalPath);
+    console.log("Uploaded Avatar");
+  } catch (error) {
+    console.log("Error uploading avatar", error);
+    throw new ApiError(500, "Failed to upload avatar");
   }
 
-  const avatar = await uploadOnCloudinary(avatarLocalPath);
-  let coverImage = "";
-  if (coverLocalPath) {
+  let coverImage;
+  try {
     coverImage = await uploadOnCloudinary(coverLocalPath);
+    console.log("Uploaded cover image");
+  } catch (error) {
+    console.log("Error uploading cover image", error);
+    throw new ApiError(500, "Failed to upload cover image");
   }
 
-  const user = User.create({
-    fullname,
-    avatar: avatar.url,
-    coverImage: coverImage?.url || "",
-    email,
-    password,
-    username: username.toLowerCase(),
-  });
+  try {
+    const user = await User.create({
+      fullname,
+      avatar: avatar.url,
+      coverImage: coverImage?.url || "",
+      email,
+      password,
+      username: username.toLowerCase(),
+    });
 
-  const createdUser = await User.findById(user._id).select(
-    "-password -refreshToken"
-  );
+    const createdUser = await User.findById(user._id).select(
+      "-password -refreshToken"
+    );
 
-  if (!createdUser) {
-    throw new ApiError(500, "Something went wrong while registering a user");
-  }
+    if (!createdUser) {
+      throw new ApiError(500, "Something went wrong while registering a user");
+    }
 
-  return res
-    .status(201)
-    .json(new ApiResponse(201, createdUser, "User registered successfully"));
+    return res
+      .status(201)
+      .json(new ApiResponse(201, createdUser, "User registered successfully"));
   } catch (error) {
     console.log("User creation failed", error);
 
